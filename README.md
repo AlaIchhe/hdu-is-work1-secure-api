@@ -2,6 +2,10 @@
 
 Author: zhuhe, HDU number 23320116.
 
+Repository: https://github.com/AlaIchhe/hdu-is-work1-secure-api
+
+[![Secure API CI](https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml/badge.svg)](https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml)
+
 This repository contains the complete Work 1 implementation:
 
 - a Flask REST API with JWT authentication, password hashing, parameterized
@@ -163,9 +167,15 @@ During development, pip-audit initially reported 17 advisories in Flask 3.1.2
 and PyJWT 2.10.1. The dependencies were upgraded to Flask 3.1.3 and PyJWT
 2.15.1, and the repeated audit reported no known vulnerabilities.
 
-The public repository URL and the last successful GitHub Actions run URL are
-still to be added after the repository is pushed and the workflow runs. The
-pipeline configuration itself is complete in this checkout.
+The public repository is live, and the first GitHub Actions run completed
+successfully. The workflow took 40 seconds end to end, including the container
+build. The latest runs are available on the workflow page:
+
+- Repository: https://github.com/AlaIchhe/hdu-is-work1-secure-api
+- CI workflow: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml
+- Verified successful run: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39229094367
+
+![GitHub Actions run](screenshots/09-github-actions.png)
 
 ## CVE analysis: CVE-2021-41773
 
@@ -278,11 +288,13 @@ python3 scripts/render_terminal.py
 
 ## Submission checklist
 
-- Public git repository: pending remote creation and push.
-- Last successful pipeline URL: pending the first remote workflow run.
+- Public git repository: https://github.com/AlaIchhe/hdu-is-work1-secure-api
+- Successful pipeline run: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39229094367
+- CI workflow page: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml
 - README: this file.
 - Fixes folder: vulnerable-environment/CVE-2021-41773/fixed.
 - SAST/SCA screenshots: screenshots/04-bandit-sast.png and
   screenshots/05-pip-audit-sca.png.
+- GitHub Actions screenshot: screenshots/09-github-actions.png.
 - CVE reproduction and elimination screenshots: screenshots/07-cve-reproduction.png
   and screenshots/08-cve-fix-verification.png.

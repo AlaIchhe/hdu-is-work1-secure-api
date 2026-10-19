@@ -50,9 +50,10 @@ initial software composition analysis, pip-audit found 17 advisories in Flask
 known findings.
 
 <div class="note">
-The public repository URL and the GitHub Actions run URL are intentionally
-left as placeholders until the local repository is pushed to a remote. The
-workflow and all local validation are complete.
+The public repository is https://github.com/AlaIchhe/hdu-is-work1-secure-api.
+The GitHub Actions workflow completed successfully in 40 seconds, including
+the tests, both security scanners, and the Docker build. A verified run is
+https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39229094367.
 </div>
 
 <div class="page-break"></div>
@@ -199,12 +200,21 @@ pipeline as a cosmetic check.
 
 <figure>
 <img src="../screenshots/04-bandit-sast.png" alt="Bandit SAST report">
-<figcaption>Figure 4. Bandit SAST report with zero findings across 309 lines of code.</figcaption>
+<figcaption>Figure 4. Bandit SAST report with zero findings across 311 lines of code.</figcaption>
 </figure>
 
 <figure>
 <img src="../screenshots/05-pip-audit-sca.png" alt="pip-audit SCA report">
 <figcaption>Figure 5. pip-audit reports no known vulnerabilities after dependency upgrades.</figcaption>
+</figure>
+
+The remote workflow was triggered by the initial public push. It completed
+with a successful result for every step: dependency installation, pytest,
+Bandit, pip-audit, Docker build, and artifact upload.
+
+<figure>
+<img src="../screenshots/09-github-actions.png" alt="GitHub Actions successful run">
+<figcaption>Figure 6. GitHub Actions run 39229094367 completed with a successful status and produced the security-reports artifact.</figcaption>
 </figure>
 
 # 6. CVE-2021-41773 Analysis
@@ -240,7 +250,7 @@ vulnerable version before exploitation.
 
 <figure>
 <img src="../screenshots/06-cve-vulnerable-version.png" alt="Vulnerable and fixed server versions">
-<figcaption>Figure 6. The vulnerable lab runs Apache 2.4.49 and the fixed lab runs Apache 2.4.51.</figcaption>
+<figcaption>Figure 7. The vulnerable lab runs Apache 2.4.49 and the fixed lab runs Apache 2.4.51.</figcaption>
 </figure>
 
 ## 6.3 Reproduction sequence and observed result
@@ -274,7 +284,7 @@ Observed result:
 
 <figure>
 <img src="../screenshots/07-cve-reproduction.png" alt="CVE reproduction">
-<figcaption>Figure 7. Successful file disclosure and remote command execution against Apache 2.4.49.</figcaption>
+<figcaption>Figure 8. Successful file disclosure and remote command execution against Apache 2.4.49.</figcaption>
 </figure>
 
 ## 6.4 Root-cause analysis
@@ -333,7 +343,7 @@ is eliminated without breaking the intended application behavior.
 
 <figure>
 <img src="../screenshots/08-cve-fix-verification.png" alt="CVE fix verification">
-<figcaption>Figure 8. The fixed environment rejects both attacks and preserves normal CGI functionality.</figcaption>
+<figcaption>Figure 9. The fixed environment rejects both attacks and preserves normal CGI functionality.</figcaption>
 </figure>
 
 # 7. Reproducibility Checklist
@@ -359,10 +369,10 @@ environment. For production deployment, a managed database, a secret manager,
 key rotation, structured audit logging, rate limiting at the edge, and
 centralized monitoring should be added.
 
-The repository has not yet been published to a public GitHub or GitLab remote.
-Therefore the final public repository link and the last successful Actions run
-link must be inserted after the user authorizes a remote push. The pipeline
-itself and the equivalent local execution are complete.
+The repository is public at
+https://github.com/AlaIchhe/hdu-is-work1-secure-api. The first remote workflow
+run completed successfully, and the workflow page always lists the latest runs:
+https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml.
 
 # 9. References
 
