@@ -180,9 +180,9 @@ PyJWT 2.15.1 removed all known findings.</p>
 <div class="note">
 <p>The public repository is
 https://github.com/AlaIchhe/hdu-is-work1-secure-api. The GitHub Actions
-workflow completed successfully in 40 seconds, including the tests, both
+workflow completed successfully in 38 seconds, including the tests, both
 security scanners, and the Docker build. A verified run is
-https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39229094367.</p>
+https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39236852801.</p>
 </div>
 <div class="page-break">
 
@@ -360,14 +360,14 @@ Figure 5. pip-audit reports no known vulnerabilities after dependency
 upgrades.
 </figcaption>
 </figure>
-<p>The remote workflow was triggered by the initial public push. It
-completed with a successful result for every step: dependency
+<p>The workflow shown here was triggered by the CVE replacement commit.
+It completed with a successful result for every step: dependency
 installation, pytest, Bandit, pip-audit, Docker build, and artifact
 upload.</p>
 <figure>
 <img src="../screenshots/09-github-actions.png" alt="GitHub Actions successful run">
 <figcaption>
-Figure 6. GitHub Actions run 39229094367 completed with a successful
+Figure 6. GitHub Actions run 39236852801 completed with a successful
 status and produced the security-reports artifact.
 </figcaption>
 </figure>
@@ -463,10 +463,10 @@ server process. This is a trust-boundary failure: untrusted request data
 crosses into an executable expression engine. Actuator exposure is
 necessary for this specific attack path, but the underlying code defect
 is the unrestricted evaluation context.</p>
-<p>The downstream impact is arbitrary command execution with the service
-account’s privileges. The lab container runs as root in the vulnerable
-image, so the captured <code>uid=0(root)</code> result demonstrates the
-maximum impact of this flaw.</p>
+<p>The downstream impact is arbitrary command execution with the
+privileges of the service account. The lab container runs as root in the
+vulnerable image, so the captured <code>uid=0(root)</code> result
+demonstrates the maximum impact of this flaw.</p>
 <p>This is separate from the Flask API. It is a dependency and
 configuration security issue in a gateway component, which is why
 software composition analysis and accurate CVE triage are relevant to
@@ -483,16 +483,15 @@ removal.</li>
 <li>A non-root runtime user named <code>app</code> as defense in
 depth.</li>
 </ol>
-<p>The upstream fix commit
-<code>d8c255eddf4eb5f80ba027329227b0d9e2cd9698</code> introduces a
-<code>GatewayEvaluationContext</code> backed by
-<code>SimpleEvaluationContext</code> for read-only data binding. It
-delegates bean lookup to <code>BeanFactoryResolver</code> but uses the
-restricted type locator and method/constructor resolvers from the simple
-context. Consequently, expressions cannot resolve arbitrary classes and
-the type-reference primitive used by the exploit is unavailable.
-Upgrading is the primary fix; limiting or authenticating actuator access
-is an additional defense-in-depth measure.</p>
+<p>The upstream fix commit <code>d8c255e</code> introduces a gateway
+evaluation context backed by <code>SimpleEvaluationContext</code> for
+read-only data binding. It delegates bean lookup to
+<code>BeanFactoryResolver</code> but uses the restricted type locator
+and method/constructor resolvers from the simple context. Consequently,
+expressions cannot resolve arbitrary classes and the type-reference
+primitive used by the exploit is unavailable. Upgrading is the primary
+fix; limiting or authenticating actuator access is an additional
+defense-in-depth measure.</p>
 <h2 id="verification-and-regression-testing">6.6 Verification and
 regression testing</h2>
 <p>The fixed image is started on port 8081:</p>
@@ -546,9 +545,9 @@ environment. For production deployment, a managed database, a secret
 manager, key rotation, structured audit logging, rate limiting at the
 edge, and centralized monitoring should be added.</p>
 <p>The repository is public at
-https://github.com/AlaIchhe/hdu-is-work1-secure-api. The first remote
-workflow run completed successfully, and the workflow page always lists
-the latest runs:
+https://github.com/AlaIchhe/hdu-is-work1-secure-api. The remote workflow
+run for the current report completed successfully, and the workflow page
+always lists the latest runs:
 https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml.</p>
 <h1 id="references">9. References</h1>
 <ol type="1">

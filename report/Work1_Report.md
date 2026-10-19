@@ -51,9 +51,9 @@ known findings.
 
 <div class="note">
 The public repository is https://github.com/AlaIchhe/hdu-is-work1-secure-api.
-The GitHub Actions workflow completed successfully in 40 seconds, including
+The GitHub Actions workflow completed successfully in 38 seconds, including
 the tests, both security scanners, and the Docker build. A verified run is
-https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39229094367.
+https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39236852801.
 </div>
 
 <div class="page-break"></div>
@@ -208,13 +208,13 @@ pipeline as a cosmetic check.
 <figcaption>Figure 5. pip-audit reports no known vulnerabilities after dependency upgrades.</figcaption>
 </figure>
 
-The remote workflow was triggered by the initial public push. It completed
-with a successful result for every step: dependency installation, pytest,
+The workflow shown here was triggered by the CVE replacement commit. It
+completed with a successful result for every step: dependency installation, pytest,
 Bandit, pip-audit, Docker build, and artifact upload.
 
 <figure>
 <img src="../screenshots/09-github-actions.png" alt="GitHub Actions successful run">
-<figcaption>Figure 6. GitHub Actions run 39229094367 completed with a successful status and produced the security-reports artifact.</figcaption>
+<figcaption>Figure 6. GitHub Actions run 39236852801 completed with a successful status and produced the security-reports artifact.</figcaption>
 </figure>
 
 # 6. CVE-2022-22947 Analysis
@@ -313,8 +313,8 @@ an executable expression engine. Actuator exposure is necessary for this
 specific attack path, but the underlying code defect is the unrestricted
 evaluation context.
 
-The downstream impact is arbitrary command execution with the service account's
-privileges. The lab container runs as root in the vulnerable image, so the
+The downstream impact is arbitrary command execution with the privileges of the
+service account. The lab container runs as root in the vulnerable image, so the
 captured `uid=0(root)` result demonstrates the maximum impact of this flaw.
 
 This is separate from the Flask API. It is a dependency and configuration
@@ -331,9 +331,8 @@ The fixed image in `vulnerable-environment/CVE-2022-22947/fixed` contains:
    test demonstrates the dependency fix rather than endpoint removal.
 3. A non-root runtime user named `app` as defense in depth.
 
-The upstream fix commit `d8c255eddf4eb5f80ba027329227b0d9e2cd9698` introduces a
-`GatewayEvaluationContext` backed by `SimpleEvaluationContext` for read-only
-data binding. It delegates bean lookup to `BeanFactoryResolver` but uses the
+The upstream fix commit `d8c255e` introduces a gateway evaluation context
+backed by `SimpleEvaluationContext` for read-only data binding. It delegates bean lookup to `BeanFactoryResolver` but uses the
 restricted type locator and method/constructor resolvers from the simple
 context. Consequently, expressions cannot resolve arbitrary classes and the
 type-reference primitive used by the exploit is unavailable. Upgrading is the
@@ -395,8 +394,8 @@ key rotation, structured audit logging, rate limiting at the edge, and
 centralized monitoring should be added.
 
 The repository is public at
-https://github.com/AlaIchhe/hdu-is-work1-secure-api. The first remote workflow
-run completed successfully, and the workflow page always lists the latest runs:
+https://github.com/AlaIchhe/hdu-is-work1-secure-api. The remote workflow run for the
+current report completed successfully, and the workflow page always lists the latest runs:
 https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml.
 
 # 9. References

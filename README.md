@@ -167,13 +167,13 @@ During development, pip-audit initially reported 17 advisories in Flask 3.1.2
 and PyJWT 2.10.1. The dependencies were upgraded to Flask 3.1.3 and PyJWT
 2.15.1, and the repeated audit reported no known vulnerabilities.
 
-The public repository is live, and the first GitHub Actions run completed
-successfully. The workflow took 40 seconds end to end, including the container
-build. The latest runs are available on the workflow page:
+The public repository is live, and the GitHub Actions run for this CVE update
+completed successfully. The workflow took 38 seconds end to end, including the
+container build. The latest runs are available on the workflow page:
 
 - Repository: https://github.com/AlaIchhe/hdu-is-work1-secure-api
 - CI workflow: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml
-- Verified successful run: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39229094367
+- Verified successful run: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39236852801
 
 ![GitHub Actions run](screenshots/09-github-actions.png)
 
@@ -295,7 +295,7 @@ python3 scripts/render_terminal.py
 ## Submission checklist
 
 - Public git repository: https://github.com/AlaIchhe/hdu-is-work1-secure-api
-- Successful pipeline run: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39229094367
+- Successful pipeline run: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39236852801
 - CI workflow page: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml
 - README: this file.
 - Fixes folder: vulnerable-environment/CVE-2022-22947/fixed.
