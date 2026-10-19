@@ -13,8 +13,8 @@ This repository contains the complete Work 1 implementation:
 - automated tests;
 - a GitHub Actions pipeline with Bandit SAST, pip-audit SCA, tests, and a
   container build;
-- a reproducible Vulhub-style environment for CVE-2021-41773;
-- a fixed Apache HTTP Server environment and a regression/verification script.
+- a reproducible Vulhub environment for CVE-2022-22947;
+- a fixed Spring Cloud Gateway build and a regression/verification script.
 
 ## Project structure
 
@@ -25,7 +25,7 @@ tests/                         API tests
 scripts/smoke_test.py          curl-based authentication/security smoke test
 scripts/render_terminal.py     evidence screenshot renderer
 .github/workflows/ci.yml       CI pipeline
-vulnerable-environment/        vulnerable and fixed CVE-2021-41773 images
+vulnerable-environment/        vulnerable and fixed CVE-2022-22947 images
 screenshots/                   reproduced evidence screenshots
 ~~~
 
@@ -177,112 +177,118 @@ build. The latest runs are available on the workflow page:
 
 ![GitHub Actions run](screenshots/09-github-actions.png)
 
-## CVE analysis: CVE-2021-41773
+## CVE analysis: CVE-2022-22947
 
 ### Vulnerability summary
 
-CVE-2021-41773 is a path-normalization and path-traversal vulnerability in
-Apache HTTP Server 2.4.49. NVD rates it CVSS 3.1 9.8 (Critical):
-AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H. A request containing encoded dot segments
-can map an alias URL to a file outside the intended directory. When the root
-directory is broadly readable and CGI is enabled, the same primitive can reach
-an interpreter such as /bin/sh and lead to command execution.
+CVE-2022-22947 is a Spring Expression Language (SpEL) injection vulnerability
+in Spring Cloud Gateway before 3.1.1 and 3.0.7. NVD rates it CVSS 3.1 10.0
+(Critical): AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H. If the Gateway Actuator
+endpoint is enabled, exposed, and unsecured, a crafted route definition can
+make the server evaluate attacker-controlled SpEL during filter binding. This
+allows unauthenticated remote code execution.
 
-The vulnerable environment intentionally follows the Vulhub configuration:
+The vulnerable environment follows the Vulhub configuration:
 
-- base image: Apache HTTP Server 2.4.49;
-- mod_cgi and mod_cgid enabled;
-- CGI ScriptAlias enabled;
-- Directory-root access changed from deny to grant;
-- port 8080 exposed for the lab.
+- base image: `vulhub/spring-cloud-gateway:3.1.0`;
+- the Gateway Actuator endpoint is exposed without authentication;
+- an example gateway route is configured;
+- port 8080 is published for the lab.
 
 ### Reproduction
 
 Start the vulnerable image:
 
 ~~~bash
-docker compose -f vulnerable-environment/CVE-2021-41773/vulnerable/docker-compose.yml up -d --build
+docker compose -f vulnerable-environment/CVE-2022-22947/vulnerable/docker-compose.yml up -d
 ~~~
 
 The exact commands are:
 
 ~~~bash
-curl --path-as-is http://127.0.0.1:8080/icons/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd
-curl --data 'echo;id' http://127.0.0.1:8080/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/bin/sh
+curl -sS http://127.0.0.1:8080/actuator/health
+curl -sS http://127.0.0.1:8080/actuator/gateway/routes
 ~~~
 
-The supplied script records both requests:
+The supplied script records the full request sequence:
 
 ~~~bash
-python3 vulnerable-environment/CVE-2021-41773/exploit.py http://127.0.0.1:8080
+python3 vulnerable-environment/CVE-2022-22947/exploit.py http://127.0.0.1:8080
 ~~~
 
 Observed result:
 
-- the first request returned HTTP 200 with the container's /etc/passwd,
-  including root:x:0:0;
-- the second request returned HTTP 200 and executed id as the Apache daemon
-  user.
+- creating the route returned HTTP 201;
+- refreshing the gateway returned HTTP 200 and evaluated the injected
+  expression;
+- reading the route returned the command output `uid=0(root) gid=0(root)
+  groups=0(root)` in the filter value.
 
-![Vulnerable Apache version](screenshots/06-cve-vulnerable-version.png)
+![Vulnerable and fixed gateway versions](screenshots/06-cve-vulnerable-version.png)
 
 ![CVE reproduction](screenshots/07-cve-reproduction.png)
 
 ### Root cause
 
-The defect is an input-normalization error in Apache 2.4.49. A change to path
-normalization failed to reject a crafted sequence of encoded dot segments.
-Apache therefore accepted a URL that appeared to remain under an alias such as
-/icons/ while resolving the final filesystem path outside the alias directory.
+Spring Cloud Gateway allows route filter arguments to contain SpEL. In version
+3.1.0, `ShortcutConfigurable` evaluates those values with a
+`StandardEvaluationContext`. That context supports type references,
+constructors, and general method invocation. Because a route definition is
+accepted from the Actuator API, an attacker can supply an expression that
+references application classes and invokes arbitrary methods.
 
-The broad Directory-root policy is the second half of the failure. The lab
-configuration grants access to the whole filesystem. Without a deny rule for
-paths outside the document root and CGI directory, the traversed path is
-served. Because CGI execution is enabled, the attacker can also target
-/bin/sh and turn file disclosure into command execution. The vulnerable
-version plus permissive authorization configuration together produce the
-critical impact.
+The vulnerable design crosses a trust boundary: untrusted HTTP input is treated
+as executable expression text. Actuator exposure is a precondition, but the
+code-level defect is the use of an unrestricted evaluation context for route
+configuration data. The upstream fix commit replaces it with a restricted
+`SimpleEvaluationContext`, which removes type resolution and the expression
+features required by the exploit.
 
 ### Applied fix
 
-The fixed image in vulnerable-environment/CVE-2021-41773/fixed applies three
-changes:
+The fixed image in `vulnerable-environment/CVE-2022-22947/fixed` builds the
+same application with three hardening changes:
 
-1. It upgrades the base image from Apache 2.4.49 to 2.4.51. This version
-   contains the corrected path-normalization behavior and also covers the
-   incomplete 2.4.50 fix tracked as CVE-2021-42013.
-2. It restores the default Directory-root policy to Require all denied and
-   grants access only to the intended document root and the dedicated CGI
-   directory.
-3. It keeps CGI available through an explicit ScriptAlias and a working
-   mod_cgid socket configuration, so the application's legitimate CGI
-   functionality remains testable.
+1. It upgrades `spring-cloud-gateway-server` from 3.1.0 to 3.1.1, which contains
+   the restricted expression context.
+2. It keeps the Actuator endpoint exposed during the test so the result shows
+   that the code-level fix, not merely endpoint removal, blocks the attack.
+3. It runs the service as the unprivileged `app` user as defense in depth.
 
-The version upgrade removes the traversal primitive. The directory
-restrictions are defense in depth: even if another alias or normalization
-defect appears, traversal outside the explicitly granted paths is denied.
+For production, the Actuator endpoint should also be protected by network
+policy and authentication. That reduces attack surface but is not a substitute
+for the 3.1.1 dependency upgrade.
 
 ### Fix verification and regression test
 
 ~~~bash
-docker compose -f vulnerable-environment/CVE-2021-41773/fixed/docker-compose.yml up -d --build
-python3 vulnerable-environment/CVE-2021-41773/verify-fix.py http://127.0.0.1:8081
+docker compose -f vulnerable-environment/CVE-2022-22947/fixed/docker-compose.yml up -d --build
+python3 vulnerable-environment/CVE-2022-22947/verify-fix.py http://127.0.0.1:8081
 ~~~
 
-The fixed server is Apache 2.4.51. Both exploit requests return HTTP 400 and
-contain neither /etc/passwd data nor uid output. The normal endpoint
-/cgi-bin/hello.sh still returns cgi-ok with HTTP 200. This confirms both
-security and regression behavior.
+The fixed service reports `3.1.1` in its image label and packaged gateway JAR.
+The malicious route is accepted by the create endpoint but is not loaded during
+refresh; reading it returns HTTP 404, and no `uid=` output appears. At the same
+time, the service health endpoint returns `UP`, the preconfigured index route
+remains available, and a benign route filter still retains `fixed-ok`. The
+container runs as `uid=999(app)`, not root.
 
 ![Fixed build verification](screenshots/08-cve-fix-verification.png)
+
+### References
+
+- NVD: https://nvd.nist.gov/vuln/detail/CVE-2022-22947
+- VMware advisory: https://tanzu.vmware.com/security/cve-2022-22947
+- Upstream fix: https://github.com/spring-cloud/spring-cloud-gateway/commit/d8c255eddf4eb5f80ba027329227b0d9e2cd9698
+- Vulhub: https://github.com/vulhub/vulhub/tree/master/spring/CVE-2022-22947
 
 ## Reproduce the full validation
 
 ~~~bash
 python -m pytest
 python3 scripts/smoke_test.py
-python3 vulnerable-environment/CVE-2021-41773/exploit.py http://127.0.0.1:8080
-python3 vulnerable-environment/CVE-2021-41773/verify-fix.py http://127.0.0.1:8081
+python3 vulnerable-environment/CVE-2022-22947/exploit.py http://127.0.0.1:8080
+python3 vulnerable-environment/CVE-2022-22947/verify-fix.py http://127.0.0.1:8081
 python3 scripts/render_terminal.py
 ~~~
 
@@ -292,7 +298,7 @@ python3 scripts/render_terminal.py
 - Successful pipeline run: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/runs/39229094367
 - CI workflow page: https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml
 - README: this file.
-- Fixes folder: vulnerable-environment/CVE-2021-41773/fixed.
+- Fixes folder: vulnerable-environment/CVE-2022-22947/fixed.
 - SAST/SCA screenshots: screenshots/04-bandit-sast.png and
   screenshots/05-pip-audit-sca.png.
 - GitHub Actions screenshot: screenshots/09-github-actions.png.

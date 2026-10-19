@@ -31,6 +31,8 @@ def color_for(line):
 
 
 def render(output_name, title, prompt, text):
+    if output_name == "06-cve-vulnerable-version.png":
+        prompt = "gateway version evidence"
     font = ImageFont.truetype(FONT_PATH, 17)
     bold = ImageFont.truetype(FONT_BOLD_PATH, 17)
     title_font = ImageFont.truetype(FONT_BOLD_PATH, 16)
@@ -112,19 +114,19 @@ def main():
     )
     render(
         "06-cve-vulnerable-version.png",
-        "CVE-2021-41773 - vulnerable server version",
+        "Spring Cloud Gateway versions",
         "curl -I http://127.0.0.1:8080/",
         (REPORTS / "cve-versions.txt").read_text(encoding="utf-8"),
     )
     render(
         "07-cve-reproduction.png",
-        "CVE-2021-41773 - file disclosure and command execution",
+        "Spring Cloud Gateway SpEL injection",
         "python3 exploit.py http://127.0.0.1:8080",
         (REPORTS / "cve-repro.txt").read_text(encoding="utf-8"),
     )
     render(
         "08-cve-fix-verification.png",
-        "CVE-2021-41773 - fixed build verification",
+        "Spring Cloud Gateway fixed build verification",
         "python3 verify-fix.py http://127.0.0.1:8081",
         (REPORTS / "cve-fixed.txt").read_text(encoding="utf-8"),
     )

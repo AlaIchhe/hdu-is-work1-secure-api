@@ -148,10 +148,11 @@ full security lifecycle. The work combines secure API design, password
 and token handling, SQL injection and XSS defenses, automated security
 checks in CI/CD, controlled vulnerability reproduction with Vulhub,
 root-cause analysis, remediation, and regression testing.</p>
-<p>The selected real vulnerability is CVE-2021-41773 in Apache HTTP
-Server 2.4.49. The vulnerable service was run locally in Docker, the
-attack was reproduced against the lab target, and a fixed Apache 2.4.51
-image with a restrictive directory policy was built and verified.</p>
+<p>The selected real vulnerability is CVE-2022-22947 in Spring Cloud
+Gateway 3.1.0. The vulnerable service was run locally in Docker, the
+SpEL injection was reproduced against the lab target, and a fixed 3.1.1
+build with a restricted expression context was compiled and
+verified.</p>
 <h1 id="executive-summary">2. Executive Summary</h1>
 <p>The delivered project contains:</p>
 <ul>
@@ -165,10 +166,12 @@ API;</li>
 <li>nine automated API tests;</li>
 <li>a GitHub Actions workflow with pytest, Bandit SAST, pip-audit SCA,
 report artifacts, and a Docker build;</li>
-<li>a vulnerable Apache 2.4.49 environment that reproduces file
-disclosure and CGI command execution;</li>
-<li>a fixed Apache 2.4.51 environment that blocks both attacks while
-preserving normal CGI behavior.</li>
+<li>a vulnerable Spring Cloud Gateway 3.1.0 environment that
+demonstrates unauthenticated SpEL injection through the Actuator
+API;</li>
+<li>a fixed Spring Cloud Gateway 3.1.1 build that blocks the injected
+expression while preserving health, route, and filter
+functionality.</li>
 </ul>
 <p>The local security scans are clean after dependency remediation.
 During the initial software composition analysis, pip-audit found 17
@@ -368,133 +371,174 @@ Figure 6. GitHub Actions run 39229094367 completed with a successful
 status and produced the security-reports artifact.
 </figcaption>
 </figure>
-<h1 id="cve-2021-41773-analysis">6. CVE-2021-41773 Analysis</h1>
+<h1 id="cve-2022-22947-analysis">6. CVE-2022-22947 Analysis</h1>
 <h2 id="vulnerability-description">6.1 Vulnerability description</h2>
-<p>CVE-2021-41773 is a path normalization and path traversal
-vulnerability in Apache HTTP Server 2.4.49. NVD describes how a crafted
-path can map a URL to a file outside the directory configured by an
-Alias-like directive. The official CVSS 3.1 vector is:</p>
-<pre class="text"><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
-Base score: 9.8 (Critical)</code></pre>
-<p>The issue only affects 2.4.49 and not earlier releases. A fix in
-2.4.50 was incomplete and is tracked as CVE-2021-42013; 2.4.51 contains
-the complete fix.</p>
+<p>CVE-2022-22947 is a Spring Expression Language (SpEL) injection
+vulnerability in Spring Cloud Gateway. It affects versions before 3.1.1
+and 3.0.7 when the Gateway Actuator endpoint is enabled, exposed, and
+unsecured. A crafted route definition can cause attacker-controlled SpEL
+to be evaluated while route filter arguments are bound. The official
+CVSS 3.1 assessment is:</p>
+<pre class="text"><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
+Base score: 10.0 (Critical)</code></pre>
+<p>Spring released 3.1.1 and 3.0.7 as fixed versions. The NVD entry also
+lists the vulnerability in CISA’s Known Exploited Vulnerabilities
+catalog, which makes dependency tracking and prompt remediation
+operationally important.</p>
 <h2 id="vulnerable-laboratory-environment">6.2 Vulnerable laboratory
 environment</h2>
-<p>The vulnerable environment deliberately mirrors the educational
-Vulhub configuration:</p>
+<p>The vulnerable environment follows the educational Vulhub
+configuration:</p>
 <ul>
-<li>Apache HTTP Server 2.4.49;</li>
-<li>mod_cgi and mod_cgid enabled;</li>
-<li>a CGI ScriptAlias for /cgi-bin/;</li>
-<li>the root Directory policy changed from deny to grant;</li>
+<li>the <code>vulhub/spring-cloud-gateway:3.1.0</code> image;</li>
+<li>the Gateway Actuator endpoint exposed without authentication;</li>
+<li>an example gateway route to <code>http://example.com</code>;</li>
 <li>the container published on TCP port 8080.</li>
 </ul>
-<p>The built image reports Server: Apache/2.4.49 (Unix), which confirms
-the vulnerable version before exploitation.</p>
+<p>The packaged Boot library is
+<code>spring-cloud-gateway-server-3.1.0.jar</code>, which confirms the
+vulnerable dependency before exploitation. The fixed build contains
+<code>spring-cloud-gateway-server-3.1.1.jar</code> and runs as the
+unprivileged <code>app</code> user.</p>
 <figure>
-<img src="../screenshots/06-cve-vulnerable-version.png" alt="Vulnerable and fixed server versions">
+<img src="../screenshots/06-cve-vulnerable-version.png" alt="Vulnerable and fixed gateway versions">
 <figcaption>
-Figure 7. The vulnerable lab runs Apache 2.4.49 and the fixed lab runs
-Apache 2.4.51.
+Figure 7. The vulnerable lab packages Spring Cloud Gateway 3.1.0 and the
+fixed lab packages 3.1.1.
 </figcaption>
 </figure>
 <h2 id="reproduction-sequence-and-observed-result">6.3 Reproduction
 sequence and observed result</h2>
 <p>The vulnerable image is started with:</p>
 <div class="sourceCode" id="cb6"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> vulnerable-environment/CVE-2021-41773/vulnerable/docker-compose.yml up <span class="at">-d</span> <span class="at">--build</span></span></code></pre></div>
-<p>The two attack requests are:</p>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> vulnerable-environment/CVE-2022-22947/vulnerable/docker-compose.yml up <span class="at">-d</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-sS</span> http://127.0.0.1:8080/actuator/health</span></code></pre></div>
+<p>The exploit sequence is:</p>
 <div class="sourceCode" id="cb7"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">--path-as-is</span> http://127.0.0.1:8080/icons/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">--data</span> <span class="st">&#39;echo;id&#39;</span> http://127.0.0.1:8080/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/bin/sh</span></code></pre></div>
-<p>The supplied Python script records the same requests and prints the
-response body and HTTP status:</p>
-<div class="sourceCode" id="cb8"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2021-41773/exploit.py http://127.0.0.1:8080</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2022-22947/exploit.py http://127.0.0.1:8080</span></code></pre></div>
+<p>The script performs these HTTP operations and prints every status and
+response body:</p>
+<ol type="1">
+<li><code>POST /actuator/gateway/routes/hdu-cve-2022-22947</code> with
+an <code>AddResponseHeader</code> filter whose value contains a SpEL
+template.</li>
+<li><code>POST /actuator/gateway/refresh</code> to make the gateway bind
+the route filters.</li>
+<li><code>GET /actuator/gateway/routes/hdu-cve-2022-22947</code> to read
+the evaluated filter value.</li>
+<li><code>DELETE</code> and a final refresh to remove the temporary
+route.</li>
+</ol>
 <p>Observed result:</p>
 <ul>
-<li>file disclosure returned HTTP 200 and printed the container’s
-/etc/passwd, beginning with root:x:0:0;</li>
-<li>command execution returned HTTP 200 and printed uid=1(daemon),
-proving that the request reached /bin/sh through the CGI path.</li>
+<li>route creation returned HTTP 201;</li>
+<li>refresh returned HTTP 200 and evaluated the expression;</li>
+<li>the route details contained
+<code>uid=0(root) gid=0(root) groups=0(root)</code>, proving that the
+Java process executed the <code>id</code> command;</li>
+<li>cleanup requests returned HTTP 200.</li>
 </ul>
 <figure>
 <img src="../screenshots/07-cve-reproduction.png" alt="CVE reproduction">
 <figcaption>
-Figure 8. Successful file disclosure and remote command execution
-against Apache 2.4.49.
+Figure 8. Successful SpEL injection and command execution against Spring
+Cloud Gateway 3.1.0.
 </figcaption>
 </figure>
 <h2 id="root-cause-analysis">6.4 Root-cause analysis</h2>
-<p>The root cause is a path-normalization error. Apache 2.4.49 changed
-how it normalized paths and failed to reject encoded dot segments in a
-crafted URL. The request appears to be under an allowed alias such as
-/icons/, but the normalized filesystem path escapes that alias and
-reaches /etc/passwd or /bin/sh.</p>
-<p>The second contributing factor is authorization configuration. If
-paths outside the document root and CGI directory were protected by the
-normal Require all denied policy, the traversed file would still be
-denied. The Vulhub lab removes that protection to make the vulnerability
-observable. The combination of a traversal primitive and an over-broad
-directory grant turns a normalization defect into a critical
-confidentiality and code-execution issue.</p>
-<p>This is not an SQL injection or an application logic error in the
-Flask project. It is an input-normalization defect in the HTTP server
-plus an insecure default-like authorization configuration in the target
-environment.</p>
+<p>The root cause is expression-language injection in route argument
+binding. Spring Cloud Gateway supports SpEL in route filter arguments so
+that values can be derived dynamically. In version 3.1.0,
+<code>ShortcutConfigurable.normalize()</code> evaluated those values
+with <code>StandardEvaluationContext</code>, initialized with a bean
+factory resolver. That context includes the full SpEL type locator,
+constructor resolvers, and method resolvers. As a result, an expression
+can name arbitrary Java types and invoke their methods instead of being
+treated as plain configuration data.</p>
+<p>The Actuator Gateway API accepts route definitions from HTTP clients.
+The vulnerable application exposes that API without authentication, so
+an unauthenticated caller can supply the malicious filter argument. On
+refresh, the gateway loads the route and evaluates the expression in the
+server process. This is a trust-boundary failure: untrusted request data
+crosses into an executable expression engine. Actuator exposure is
+necessary for this specific attack path, but the underlying code defect
+is the unrestricted evaluation context.</p>
+<p>The downstream impact is arbitrary command execution with the service
+account’s privileges. The lab container runs as root in the vulnerable
+image, so the captured <code>uid=0(root)</code> result demonstrates the
+maximum impact of this flaw.</p>
+<p>This is separate from the Flask API. It is a dependency and
+configuration security issue in a gateway component, which is why
+software composition analysis and accurate CVE triage are relevant to
+the overall SDLC.</p>
 <h2 id="applied-fix">6.5 Applied fix</h2>
-<p>The fixed image in vulnerable-environment/CVE-2021-41773/fixed
-contains:</p>
+<p>The fixed image in
+<code>vulnerable-environment/CVE-2022-22947/fixed</code> contains:</p>
 <ol type="1">
-<li>Apache HTTP Server 2.4.51 instead of 2.4.49, which removes both the
-original traversal issue and the incomplete 2.4.50 bypass.</li>
-<li>A root Directory policy of Require all denied, with access granted
-only to the intended document root and the dedicated CGI directory.</li>
-<li>Explicit cgid configuration and a ScriptAlias for the legitimate CGI
-directory, so normal CGI functionality remains available.</li>
+<li>The same application source built against
+<code>spring-cloud-gateway-server</code> 3.1.1 instead of 3.1.0.</li>
+<li>An actuator configuration that remains exposed during verification,
+so the test demonstrates the dependency fix rather than endpoint
+removal.</li>
+<li>A non-root runtime user named <code>app</code> as defense in
+depth.</li>
 </ol>
-<p>The version upgrade removes the vulnerable normalization behavior.
-The restrictive directory policy is defense in depth: even if a future
-alias or normalization defect appears, paths outside the explicitly
-granted locations are denied rather than exposed.</p>
+<p>The upstream fix commit
+<code>d8c255eddf4eb5f80ba027329227b0d9e2cd9698</code> introduces a
+<code>GatewayEvaluationContext</code> backed by
+<code>SimpleEvaluationContext</code> for read-only data binding. It
+delegates bean lookup to <code>BeanFactoryResolver</code> but uses the
+restricted type locator and method/constructor resolvers from the simple
+context. Consequently, expressions cannot resolve arbitrary classes and
+the type-reference primitive used by the exploit is unavailable.
+Upgrading is the primary fix; limiting or authenticating actuator access
+is an additional defense-in-depth measure.</p>
 <h2 id="verification-and-regression-testing">6.6 Verification and
 regression testing</h2>
 <p>The fixed image is started on port 8081:</p>
-<div class="sourceCode" id="cb9"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> vulnerable-environment/CVE-2021-41773/fixed/docker-compose.yml up <span class="at">-d</span> <span class="at">--build</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2021-41773/verify-fix.py http://127.0.0.1:8081</span></code></pre></div>
-<p>The verification script performs three checks:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> vulnerable-environment/CVE-2022-22947/fixed/docker-compose.yml up <span class="at">-d</span> <span class="at">--build</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2022-22947/verify-fix.py http://127.0.0.1:8081</span></code></pre></div>
+<p>The verification script performs the following checks:</p>
 <ol type="1">
-<li>the benign /cgi-bin/hello.sh endpoint returns cgi-ok;</li>
-<li>the /etc/passwd traversal returns an error and does not contain
-root:x:0:0;</li>
-<li>the /bin/sh CGI traversal returns an error and does not contain
-uid=.</li>
+<li>the health endpoint returns HTTP 200 with status
+<code>UP</code>;</li>
+<li>the preconfigured <code>index</code> gateway route is still
+present;</li>
+<li>the same malicious SpEL route is created and refreshed, then must
+not appear in the active route list and must not expose command
+output;</li>
+<li>a benign route with a literal <code>AddResponseHeader</code> value
+is created, refreshed, read, and deleted successfully.</li>
 </ol>
-<p>Both attack requests returned HTTP 400 against Apache 2.4.51. The
-normal CGI endpoint returned HTTP 200 with cgi-ok. This demonstrates
-that the vulnerability is eliminated without breaking the intended
-application behavior.</p>
+<p>On the fixed build, the malicious route creation returned HTTP 201,
+but the route was not loaded after refresh and its subsequent GET
+returned HTTP 404. No <code>uid=</code> output was produced. The health
+check remained <code>UP</code>, the index route remained available, and
+the benign filter retained <code>fixed-ok</code>. The packaged JAR
+contains <code>spring-cloud-gateway-server-3.1.1.jar</code>, and the
+container runs as <code>uid=999(app)</code>. This demonstrates that the
+code-level vulnerability is eliminated without breaking normal gateway
+behavior.</p>
 <figure>
 <img src="../screenshots/08-cve-fix-verification.png" alt="CVE fix verification">
 <figcaption>
-Figure 9. The fixed environment rejects both attacks and preserves
-normal CGI functionality.
+Figure 9. The fixed build rejects the injected expression and preserves
+health, routing, and filter behavior.
 </figcaption>
 </figure>
 <h1 id="reproducibility-checklist">7. Reproducibility Checklist</h1>
 <p>The following commands reproduce the local validation from the
 repository root:</p>
-<div class="sourceCode" id="cb10"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pytest</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/smoke_test.py</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2021-41773/exploit.py http://127.0.0.1:8080</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2021-41773/verify-fix.py http://127.0.0.1:8081</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/render_terminal.py</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pytest</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/smoke_test.py</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2022-22947/exploit.py http://127.0.0.1:8080</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2022-22947/verify-fix.py http://127.0.0.1:8081</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/render_terminal.py</span></code></pre></div>
 <p>The API smoke test expects the Flask container at port 5000. The CVE
-scripts expect the vulnerable Apache container at port 8080 and the
-fixed Apache container at port 8081.</p>
+scripts expect the vulnerable Spring Cloud Gateway container at port
+8080 and the fixed gateway container at port 8081.</p>
 <h1 id="limitations-and-submission-notes">8. Limitations and Submission
 Notes</h1>
 <p>The lab API uses SQLite and an in-process secret supplied through the
@@ -513,10 +557,12 @@ https://github.com/AlaIchhe/hdu-is-work1-secure-api/actions/workflows/ci.yml.</p
 <li>JWT introduction, https://jwt.io/introduction</li>
 <li>GitHub Actions documentation, https://docs.github.com/actions</li>
 <li>Vulhub, https://github.com/vulhub/vulhub</li>
-<li>NVD, CVE-2021-41773,
-https://nvd.nist.gov/vuln/detail/CVE-2021-41773</li>
-<li>Apache HTTP Server security page,
-https://httpd.apache.org/security/vulnerabilities_24.html</li>
+<li>NVD, CVE-2022-22947,
+https://nvd.nist.gov/vuln/detail/CVE-2022-22947</li>
+<li>VMware Tanzu advisory,
+https://tanzu.vmware.com/security/cve-2022-22947</li>
+<li>Upstream fix commit,
+https://github.com/spring-cloud/spring-cloud-gateway/commit/d8c255eddf4eb5f80ba027329227b0d9e2cd9698</li>
 <li>Docker documentation, https://docs.docker.com/</li>
 </ol>
 </body>
