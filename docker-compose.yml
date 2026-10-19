@@ -1,0 +1,15 @@
+services:
+  api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-}
+    volumes:
+      - api_data:/data
+    restart: unless-stopped
+
+volumes:
+  api_data:

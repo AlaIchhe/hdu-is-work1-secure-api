@@ -1,0 +1,15 @@
+.env
+AGENTS.md
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+instance/
+reports/
+report/preview*/
+*.patch
+*.db
+*.db-shm
+*.db-wal

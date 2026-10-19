@@ -1,0 +1,52 @@
+name: Secure API CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-scan:
+    runs-on: ubuntu-latest
+    env:
+      JWT_SECRET_KEY: ci-only-secret-key-with-more-than-thirty-two-characters
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: python -m pytest
+
+      - name: SAST with Bandit
+        run: |
+          mkdir -p reports
+          bandit -r app.py secure_api -f json -o reports/bandit.json
+          bandit -r app.py secure_api -f txt
+
+      - name: SCA with pip-audit
+        run: |
+          mkdir -p reports
+          pip-audit -r requirements.txt -f json -o reports/pip-audit.json
+          pip-audit -r requirements.txt
+
+      - name: Build container
+        run: docker build -t secure-api-lab:ci .
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: reports/
+          if-no-files-found: warn

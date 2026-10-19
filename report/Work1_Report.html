@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Work1_Report</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="title-page">
+<p class="course">
+HDU IS Laboratory
+</p>
+<h1>
+Laboratory Work No. 1
+</h1>
+<h2>
+Secure REST API Development with CI/CD and Real CVE Vulnerability
+Analysis
+</h2>
+<table class="student-table">
+<tr>
+<td>
+<strong>Variant</strong>
+</td>
+<td>
+Variant 1
+</td>
+</tr>
+<tr>
+<td>
+<strong>Student</strong>
+</td>
+<td>
+zhuhe
+</td>
+</tr>
+<tr>
+<td>
+<strong>HDU number</strong>
+</td>
+<td>
+23320116
+</td>
+</tr>
+<tr>
+<td>
+<strong>Date</strong>
+</td>
+<td>
+19 October 2026
+</td>
+</tr>
+</table>
+</div>
+<div class="page-break">
+
+</div>
+<h1 id="purpose">1. Purpose</h1>
+<p>The purpose of this laboratory work is to build a small but complete
+secure backend service and to study a real vulnerability through the
+full security lifecycle. The work combines secure API design, password
+and token handling, SQL injection and XSS defenses, automated security
+checks in CI/CD, controlled vulnerability reproduction with Vulhub,
+root-cause analysis, remediation, and regression testing.</p>
+<p>The selected real vulnerability is CVE-2021-41773 in Apache HTTP
+Server 2.4.49. The vulnerable service was run locally in Docker, the
+attack was reproduced against the lab target, and a fixed Apache 2.4.51
+image with a restrictive directory policy was built and verified.</p>
+<h1 id="executive-summary">2. Executive Summary</h1>
+<p>The delivered project contains:</p>
+<ul>
+<li>a Flask REST API with three business endpoints and one health
+endpoint;</li>
+<li>SQLite persistence using parameterized SQL only;</li>
+<li>scrypt password hashing and 15-minute HS256 JSON Web Tokens;</li>
+<li>output encoding for all user-controlled text returned by the
+API;</li>
+<li>security headers on every response;</li>
+<li>nine automated API tests;</li>
+<li>a GitHub Actions workflow with pytest, Bandit SAST, pip-audit SCA,
+report artifacts, and a Docker build;</li>
+<li>a vulnerable Apache 2.4.49 environment that reproduces file
+disclosure and CGI command execution;</li>
+<li>a fixed Apache 2.4.51 environment that blocks both attacks while
+preserving normal CGI behavior.</li>
+</ul>
+<p>The local security scans are clean after dependency remediation.
+During the initial software composition analysis, pip-audit found 17
+advisories in Flask 3.1.2 and PyJWT 2.10.1. Upgrading to Flask 3.1.3 and
+PyJWT 2.15.1 removed all known findings.</p>
+<div class="note">
+<p>The public repository URL and the GitHub Actions run URL are
+intentionally left as placeholders until the local repository is pushed
+to a remote. The workflow and all local validation are complete.</p>
+</div>
+<div class="page-break">
+
+</div>
+<h1 id="api-design-and-functionality">3. API Design and
+Functionality</h1>
+<p>The API is implemented in Python with Flask. SQLite is used as the
+storage engine. The application factory creates the database tables on
+startup, and the container entrypoint can seed two demonstration users
+and two posts.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Protection</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td>/api/auth/login</td>
+<td>Input validation, scrypt verification</td>
+<td>Checks username and password and returns a JWT</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/api/data</td>
+<td>Bearer JWT</td>
+<td>Returns the protected post feed</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/api/posts</td>
+<td>Bearer JWT, validation, output encoding</td>
+<td>Creates a post for the authenticated user</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/health</td>
+<td>None</td>
+<td>Returns a small service health response</td>
+</tr>
+</tbody>
+</table>
+<p>The database contains a users table and a posts table with a foreign
+key from posts to users. Passwords are represented only by salted scrypt
+strings.</p>
+<p>The third endpoint selected for the assignment is POST /api/posts. It
+was chosen because it exercises authentication, input validation,
+parameterized insertion, ownership, and output encoding in one flow.</p>
+<h1 id="implemented-security-measures">4. Implemented Security
+Measures</h1>
+<h2 id="sql-injection-prevention">4.1 SQL injection prevention</h2>
+<p>All SQL statements use SQLite placeholders. No query is assembled
+from user strings. The login query uses:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>connection.execute(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;SELECT id, username, password_hash FROM users WHERE username = ?&quot;</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    (username,),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>Post insertion uses the same pattern:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>connection.execute(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;INSERT INTO posts (user_id, title, body) VALUES (?, ?, ?)&quot;</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    (current_user_id, title, body),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>The test suite sends an authentication bypass string and a post body
+containing DROP TABLE. Login is denied, the posts table remains present,
+and the malicious text is stored as data rather than executed as
+SQL.</p>
+<div class="page-break">
+
+</div>
+<h2 id="xss-prevention">4.2 XSS prevention</h2>
+<p>All user-controlled strings returned by the API pass through:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>html.escape(value, quote<span class="op">=</span><span class="va">True</span>)</span></code></pre></div>
+<p>This covers authors, titles, and post bodies. JSON is returned with
+the application/json content type. The application also sends nosniff,
+frame-denial, no-referrer, restrictive CSP, and no-store headers. Output
+encoding is applied at the API boundary as required by the assignment,
+and the CSP provides a second layer for any browser-rendered client.</p>
+<p>The XSS test stores a script tag and an img event handler, then
+verifies that the returned JSON contains HTML entities such as
+&lt;script&gt; and does not contain executable script markup.</p>
+<h2 id="authentication-and-password-storage">4.3 Authentication and
+password storage</h2>
+<p>Passwords are hashed with scrypt through Werkzeug. The chosen
+parameters are N=32768, r=8, p=1 with a random 16-byte salt and a
+64-byte derived key. The plaintext password is never persisted.</p>
+<p>Successful authentication produces a signed HS256 JWT. The token
+contains:</p>
+<ul>
+<li>subject and username;</li>
+<li>issued-at and not-before times;</li>
+<li>a short expiration time (15 minutes);</li>
+<li>issuer and audience;</li>
+<li>a random token identifier.</li>
+</ul>
+<p>Token verification checks the signature, issuer, audience, required
+claims, and time window. The fixed algorithm list prevents algorithm
+substitution. Missing, malformed, expired, and tampered tokens produce a
+generic HTTP 401 response with a Bearer challenge.</p>
+<p>The login path also verifies a dummy scrypt hash when the account
+does not exist. This reduces obvious timing differences that could help
+an attacker enumerate usernames.</p>
+<h2 id="evidence-of-secure-api-behavior">4.4 Evidence of secure API
+behavior</h2>
+<figure>
+<img src="../screenshots/01-api-auth-and-data.png" alt="Authentication and protected data">
+<figcaption>
+Figure 1. Health check, unauthenticated denial, login, JWT issuance, and
+protected data access.
+</figcaption>
+</figure>
+<figure>
+<img src="../screenshots/02-api-injection-defenses.png" alt="Injection defenses">
+<figcaption>
+Figure 2. SQL injection login rejection and HTML entity encoding of an
+XSS payload.
+</figcaption>
+</figure>
+<figure>
+<img src="../screenshots/03-pytest.png" alt="Pytest results">
+<figcaption>
+Figure 3. Nine automated API and security tests pass.
+</figcaption>
+</figure>
+<h1 id="cicd-and-security-scanning">5. CI/CD and Security Scanning</h1>
+<p>The workflow file is .github/workflows/ci.yml. It is triggered by
+every push and every pull request. The job performs the following
+steps:</p>
+<ol type="1">
+<li>checks out the repository;</li>
+<li>installs Python 3.12 and cached pip dependencies;</li>
+<li>installs runtime and development requirements;</li>
+<li>runs the complete pytest suite;</li>
+<li>runs Bandit static analysis over app.py and secure_api;</li>
+<li>runs pip-audit against the runtime requirements;</li>
+<li>builds the Docker image;</li>
+<li>uploads the JSON and text security reports as the security-reports
+workflow artifact.</li>
+</ol>
+<p>Bandit analyzes Python source for common insecure patterns such as
+command execution, unsafe deserialization, weak cryptography, and
+hard-coded secrets. pip-audit checks the resolved dependency versions
+against public vulnerability advisories.</p>
+<p>The local run produced:</p>
+<pre class="text"><code>Bandit: No issues identified.
+pip-audit: No known vulnerabilities found.</code></pre>
+<p>The first SCA run found 17 advisories in Flask 3.1.2 and PyJWT
+2.10.1. The requirements were upgraded to Flask 3.1.3 and PyJWT 2.15.1,
+after which the same audit returned no known vulnerabilities. This is a
+concrete example of using SCA to find and remediate dependency risk
+rather than treating the pipeline as a cosmetic check.</p>
+<figure>
+<img src="../screenshots/04-bandit-sast.png" alt="Bandit SAST report">
+<figcaption>
+Figure 4. Bandit SAST report with zero findings across 309 lines of
+code.
+</figcaption>
+</figure>
+<figure>
+<img src="../screenshots/05-pip-audit-sca.png" alt="pip-audit SCA report">
+<figcaption>
+Figure 5. pip-audit reports no known vulnerabilities after dependency
+upgrades.
+</figcaption>
+</figure>
+<h1 id="cve-2021-41773-analysis">6. CVE-2021-41773 Analysis</h1>
+<h2 id="vulnerability-description">6.1 Vulnerability description</h2>
+<p>CVE-2021-41773 is a path normalization and path traversal
+vulnerability in Apache HTTP Server 2.4.49. NVD describes how a crafted
+path can map a URL to a file outside the directory configured by an
+Alias-like directive. The official CVSS 3.1 vector is:</p>
+<pre class="text"><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+Base score: 9.8 (Critical)</code></pre>
+<p>The issue only affects 2.4.49 and not earlier releases. A fix in
+2.4.50 was incomplete and is tracked as CVE-2021-42013; 2.4.51 contains
+the complete fix.</p>
+<h2 id="vulnerable-laboratory-environment">6.2 Vulnerable laboratory
+environment</h2>
+<p>The vulnerable environment deliberately mirrors the educational
+Vulhub configuration:</p>
+<ul>
+<li>Apache HTTP Server 2.4.49;</li>
+<li>mod_cgi and mod_cgid enabled;</li>
+<li>a CGI ScriptAlias for /cgi-bin/;</li>
+<li>the root Directory policy changed from deny to grant;</li>
+<li>the container published on TCP port 8080.</li>
+</ul>
+<p>The built image reports Server: Apache/2.4.49 (Unix), which confirms
+the vulnerable version before exploitation.</p>
+<figure>
+<img src="../screenshots/06-cve-vulnerable-version.png" alt="Vulnerable and fixed server versions">
+<figcaption>
+Figure 6. The vulnerable lab runs Apache 2.4.49 and the fixed lab runs
+Apache 2.4.51.
+</figcaption>
+</figure>
+<h2 id="reproduction-sequence-and-observed-result">6.3 Reproduction
+sequence and observed result</h2>
+<p>The vulnerable image is started with:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> vulnerable-environment/CVE-2021-41773/vulnerable/docker-compose.yml up <span class="at">-d</span> <span class="at">--build</span></span></code></pre></div>
+<p>The two attack requests are:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">--path-as-is</span> http://127.0.0.1:8080/icons/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">--data</span> <span class="st">&#39;echo;id&#39;</span> http://127.0.0.1:8080/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/bin/sh</span></code></pre></div>
+<p>The supplied Python script records the same requests and prints the
+response body and HTTP status:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2021-41773/exploit.py http://127.0.0.1:8080</span></code></pre></div>
+<p>Observed result:</p>
+<ul>
+<li>file disclosure returned HTTP 200 and printed the container’s
+/etc/passwd, beginning with root:x:0:0;</li>
+<li>command execution returned HTTP 200 and printed uid=1(daemon),
+proving that the request reached /bin/sh through the CGI path.</li>
+</ul>
+<figure>
+<img src="../screenshots/07-cve-reproduction.png" alt="CVE reproduction">
+<figcaption>
+Figure 7. Successful file disclosure and remote command execution
+against Apache 2.4.49.
+</figcaption>
+</figure>
+<h2 id="root-cause-analysis">6.4 Root-cause analysis</h2>
+<p>The root cause is a path-normalization error. Apache 2.4.49 changed
+how it normalized paths and failed to reject encoded dot segments in a
+crafted URL. The request appears to be under an allowed alias such as
+/icons/, but the normalized filesystem path escapes that alias and
+reaches /etc/passwd or /bin/sh.</p>
+<p>The second contributing factor is authorization configuration. If
+paths outside the document root and CGI directory were protected by the
+normal Require all denied policy, the traversed file would still be
+denied. The Vulhub lab removes that protection to make the vulnerability
+observable. The combination of a traversal primitive and an over-broad
+directory grant turns a normalization defect into a critical
+confidentiality and code-execution issue.</p>
+<p>This is not an SQL injection or an application logic error in the
+Flask project. It is an input-normalization defect in the HTTP server
+plus an insecure default-like authorization configuration in the target
+environment.</p>
+<h2 id="applied-fix">6.5 Applied fix</h2>
+<p>The fixed image in vulnerable-environment/CVE-2021-41773/fixed
+contains:</p>
+<ol type="1">
+<li>Apache HTTP Server 2.4.51 instead of 2.4.49, which removes both the
+original traversal issue and the incomplete 2.4.50 bypass.</li>
+<li>A root Directory policy of Require all denied, with access granted
+only to the intended document root and the dedicated CGI directory.</li>
+<li>Explicit cgid configuration and a ScriptAlias for the legitimate CGI
+directory, so normal CGI functionality remains available.</li>
+</ol>
+<p>The version upgrade removes the vulnerable normalization behavior.
+The restrictive directory policy is defense in depth: even if a future
+alias or normalization defect appears, paths outside the explicitly
+granted locations are denied rather than exposed.</p>
+<h2 id="verification-and-regression-testing">6.6 Verification and
+regression testing</h2>
+<p>The fixed image is started on port 8081:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> vulnerable-environment/CVE-2021-41773/fixed/docker-compose.yml up <span class="at">-d</span> <span class="at">--build</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2021-41773/verify-fix.py http://127.0.0.1:8081</span></code></pre></div>
+<p>The verification script performs three checks:</p>
+<ol type="1">
+<li>the benign /cgi-bin/hello.sh endpoint returns cgi-ok;</li>
+<li>the /etc/passwd traversal returns an error and does not contain
+root:x:0:0;</li>
+<li>the /bin/sh CGI traversal returns an error and does not contain
+uid=.</li>
+</ol>
+<p>Both attack requests returned HTTP 400 against Apache 2.4.51. The
+normal CGI endpoint returned HTTP 200 with cgi-ok. This demonstrates
+that the vulnerability is eliminated without breaking the intended
+application behavior.</p>
+<figure>
+<img src="../screenshots/08-cve-fix-verification.png" alt="CVE fix verification">
+<figcaption>
+Figure 8. The fixed environment rejects both attacks and preserves
+normal CGI functionality.
+</figcaption>
+</figure>
+<h1 id="reproducibility-checklist">7. Reproducibility Checklist</h1>
+<p>The following commands reproduce the local validation from the
+repository root:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pytest</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/smoke_test.py</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2021-41773/exploit.py http://127.0.0.1:8080</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> vulnerable-environment/CVE-2021-41773/verify-fix.py http://127.0.0.1:8081</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/render_terminal.py</span></code></pre></div>
+<p>The API smoke test expects the Flask container at port 5000. The CVE
+scripts expect the vulnerable Apache container at port 8080 and the
+fixed Apache container at port 8081.</p>
+<h1 id="limitations-and-submission-notes">8. Limitations and Submission
+Notes</h1>
+<p>The lab API uses SQLite and an in-process secret supplied through the
+environment. For production deployment, a managed database, a secret
+manager, key rotation, structured audit logging, rate limiting at the
+edge, and centralized monitoring should be added.</p>
+<p>The repository has not yet been published to a public GitHub or
+GitLab remote. Therefore the final public repository link and the last
+successful Actions run link must be inserted after the user authorizes a
+remote push. The pipeline itself and the equivalent local execution are
+complete.</p>
+<h1 id="references">9. References</h1>
+<ol type="1">
+<li>OWASP Top 10, https://owasp.org/www-project-top-ten/</li>
+<li>OWASP Cheat Sheet Series, https://cheatsheetseries.owasp.org/</li>
+<li>JWT introduction, https://jwt.io/introduction</li>
+<li>GitHub Actions documentation, https://docs.github.com/actions</li>
+<li>Vulhub, https://github.com/vulhub/vulhub</li>
+<li>NVD, CVE-2021-41773,
+https://nvd.nist.gov/vuln/detail/CVE-2021-41773</li>
+<li>Apache HTTP Server security page,
+https://httpd.apache.org/security/vulnerabilities_24.html</li>
+<li>Docker documentation, https://docs.docker.com/</li>
+</ol>
+</body>
+</html>

@@ -1,0 +1,148 @@
+@page {
+  size: A4;
+  margin: 17mm 16mm 18mm 16mm;
+}
+
+body {
+  color: #1f2328;
+  font-family: "DejaVu Sans", "Noto Sans", sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.45;
+}
+
+h1,
+h2,
+h3 {
+  break-after: avoid;
+  color: #0b3d66;
+  line-height: 1.2;
+}
+
+h1 {
+  border-bottom: 1.5px solid #0b3d66;
+  font-size: 18pt;
+  margin-top: 0.2em;
+  padding-bottom: 0.25em;
+}
+
+h2 {
+  font-size: 13pt;
+  margin-top: 1.2em;
+}
+
+h3 {
+  font-size: 11pt;
+}
+
+p {
+  margin: 0.45em 0;
+  text-align: justify;
+}
+
+li {
+  margin: 0.25em 0;
+}
+
+table {
+  border-collapse: collapse;
+  font-size: 9.2pt;
+  margin: 0.8em 0;
+  width: 100%;
+}
+
+th,
+td {
+  border: 1px solid #b6c2ce;
+  padding: 0.35em 0.5em;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: #eaf1f7;
+}
+
+pre {
+  background: #f4f6f8;
+  border: 1px solid #d0d7de;
+  border-radius: 4px;
+  font-family: "DejaVu Sans Mono", monospace;
+  font-size: 8.4pt;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  padding: 0.7em;
+  white-space: pre-wrap;
+}
+
+img {
+  border: 1px solid #d0d7de;
+  display: block;
+  margin: 0.6em auto;
+  max-height: 205mm;
+  max-width: 100%;
+}
+
+figure {
+  break-inside: avoid;
+  margin: 0.8em 0;
+}
+
+figcaption {
+  color: #57606a;
+  font-size: 8.7pt;
+  text-align: center;
+}
+
+.title-page {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 245mm;
+  text-align: center;
+}
+
+.title-page h1,
+.title-page h2 {
+  border: none;
+  page-break-before: avoid;
+}
+
+.title-page h1 {
+  font-size: 24pt;
+  margin: 0.2em 0;
+}
+
+.title-page h2 {
+  font-size: 15pt;
+  margin: 0.4em 0 1.8em;
+  max-width: 155mm;
+}
+
+.course {
+  color: #57606a;
+  font-size: 12pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.student-table {
+  margin-top: 2em;
+  width: 105mm;
+}
+
+.student-table td {
+  font-size: 11pt;
+  padding: 0.55em 0.8em;
+}
+
+.page-break {
+  break-after: page;
+  page-break-after: always;
+}
+
+.note {
+  background: #fff8c5;
+  border-left: 4px solid #d4a72c;
+  padding: 0.6em 0.8em;
+}
